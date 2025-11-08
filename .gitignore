@@ -1,6 +1,13 @@
 # data
 data/
 
+# dependencies
+node_modules/
+
+# build outputs
+build/
+dist/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -28,6 +35,11 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
