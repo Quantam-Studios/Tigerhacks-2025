@@ -124,7 +124,7 @@ function addWaypoint(lon, lat) {
   const entity = viewer.entities.add({
     __isWP: true,
     position: Cesium.Cartesian3.fromDegrees(lon, lat),
-    point: { pixelSize: 8, color: Cesium.Color.CYAN, outlineColor: Cesium.Color.WHITE, outlineWidth: 1 },
+    point: { pixelSize: 8, color: Cesium.Color.fromCssColorString("#7aa2ff"), outlineColor: Cesium.Color.WHITE, outlineWidth: 1 },
     label: {
       text: `${label}\n${lon.toFixed(4)}, ${lat.toFixed(4)}`,
       font: "700 10px Inter, sans-serif",
