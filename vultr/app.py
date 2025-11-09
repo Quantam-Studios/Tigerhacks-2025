@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional, Callable, Any
 import io, math, heapq, requests, time
 from pathlib import Path
 import numpy as np
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, Response, send_file
 from PIL import Image
 import rasterio
 from rasterio.windows import from_bounds
@@ -19,7 +19,7 @@ app = Flask(__name__)
 
 # ======= CONFIG =======
 COG_URL = "http://45.76.227.0:8081/mars_6p25_wgs84_cog.tif"   # remote GeoTIFF hosted on Vultr
-COG_PATH = Path("/srv/marsserver/world_cog.tif")
+COG_PATH = Path("/srv/marsserver/mars_6p25_wgs84_cog.tif")
 
 MARS_R = 3_390_000.0  # Mars mean radius (m)
 
@@ -91,37 +91,46 @@ def _looks_like_grayscale(arr: np.ndarray) -> bool:
         return True
     return False
 
-@app.route("/world_cog.tif")
+@app.route("/mars_6p25_wgs84_cog.tif")
 def serve_cog():
     """Stream the GeoTIFF file with byte-range (partial) support."""
-    if not COG_PATH.exists():
-        return jsonify({"error": "COG file not found"}), 404
+    try:
+        if not COG_PATH.exists():
+            return jsonify({"error": "COG file not found"}), 404
 
-    range_header = request.headers.get("Range")
-    size = COG_PATH.stat().st_size
+        range_header = request.headers.get("Range")
+        size = COG_PATH.stat().st_size
 
-    # If no Range header, just send the entire file
-    if not range_header:
-        return send_file(COG_PATH, mimetype="image/tiff")
+        # If no Range header, just send the entire file normally
+        if not range_header:
+            return send_file(COG_PATH, mimetype="image/tiff", conditional=True)
 
-    # Parse Range header, e.g. "bytes=0-1023"
-    byte1, byte2 = 0, None
-    range_vals = range_header.replace("bytes=", "").split("-")
-    if range_vals[0]:
-        byte1 = int(range_vals[0])
-    if len(range_vals) > 1 and range_vals[1]:
-        byte2 = int(range_vals[1])
-    byte2 = byte2 or size - 1
-    length = byte2 - byte1 + 1
+        # Parse Range header
+        byte1, byte2 = 0, None
+        range_vals = range_header.replace("bytes=", "").split("-")
+        if range_vals[0]:
+            byte1 = int(range_vals[0])
+        if len(range_vals) > 1 and range_vals[1]:
+            byte2 = int(range_vals[1])
+        byte2 = byte2 or size - 1
+        length = byte2 - byte1 + 1
+        length = max(0, min(length, size - byte1))
 
-    with open(COG_PATH, "rb") as f:
-        f.seek(byte1)
-        data = f.read(length)
+        with open(COG_PATH, "rb") as f:
+            f.seek(byte1)
+            data = f.read(length)
 
-    resp = Response(data, 206, mimetype="image/tiff", direct_passthrough=True)
-    resp.headers.add("Content-Range", f"bytes {byte1}-{byte2}/{size}")
-    return resp
+        resp = Response(
+            data, 206, mimetype="image/tiff", direct_passthrough=True
+        )
+        resp.headers.add("Content-Range", f"bytes {byte1}-{byte2}/{size}")
+        resp.headers.add("Accept-Ranges", "bytes")
+        resp.headers.add("Content-Length", str(length))
+        return resp
 
+    except Exception as e:
+        print(f"Error serving COG: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/metadata")
 def metadata():
@@ -143,7 +152,8 @@ def read_dem_window(spec: GridSpec) -> np.ndarray:
     - Else, if the sample looks like grayscale/hillshade -> auto map [p2,p98] to [AUTO_MIN_M, AUTO_MAX_M].
     - Else -> raw values treated as meters.
     """
-    with rasterio.open(COG_URL) as ds:
+    src_path = COG_PATH if COG_PATH.exists() else COG_URL
+    with rasterio.open(src_path) as ds:
         # window in dataset CRS
         if ds.crs and ds.crs != CRS.from_epsg(4326):
             xs, ys = warp_transform(CRS.from_epsg(4326), ds.crs,
@@ -625,6 +635,10 @@ def astar_solve():
     legs_cost: List[float] = []
     totals = 0.0
 
+    import time
+    print(f"[A*] starting, grid={N}, margin={mk}km ...", flush=True)
+    t0 = time.time()
+
     for i in range(len(way_rc) - 1):
         s_rc = way_rc[i]
         t_rc = way_rc[i + 1]
@@ -659,6 +673,8 @@ def astar_solve():
         path_rc.extend(path)
         legs_cost.append(float(cost))
         totals += float(cost)
+
+    print(f"[A*] finished solve in {time.time()-t0:.2f}s", flush=True)
 
     # Convert to lon/lat polyline
     positions = []
