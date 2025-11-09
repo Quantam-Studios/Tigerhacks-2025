@@ -44,6 +44,13 @@
             <section>
                 <h3>Solver settings</h3>
                 <div class="row">
+                    <label>Optimize for</label>
+                    <select id="costMode" class="pill">
+                        <option value="slope">Distance (km)</option>
+                        <option value="energy">Energy (kWh)</option>
+                    </select>
+                </div>
+                <div class="row">
                     <label>Margin (km)</label>
                     <input
                         id="margin"

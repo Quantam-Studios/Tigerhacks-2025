@@ -103,7 +103,7 @@ function redrawDashed() {
       Math.max(...waypoints.map(p => p.lat))
     );
     viewer.camera.flyTo({ destination: rect, duration: 0.6 });
-  } catch (_) {}
+  } catch (_) { }
 }
 
 // ---------- High-resolution text billboard helper ----------
@@ -340,22 +340,31 @@ function drawSolvedRoute(points) {
 }
 
 // Local A* API (server-side): POST /astar/solve
-async function solveRouteViaAPI(waypoints, gridN, marginKm, maxSlope, slopeW) {
+async function solveRouteViaAPI(waypoints, gridN, marginKm, maxSlope, slopeW, costMode = "slope") {
   const payload = {
     positions: waypoints.map(p => ({ lon: p.lon, lat: p.lat })),
     grid: gridN,
     margin_km: marginKm,
     max_slope: maxSlope,
-    slope_weight: slopeW
+    slope_weight: slopeW,
+    cost: costMode
   };
+
   const resp = await fetch(`${FLASK_URL}/astar/solve`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
+
   const js = await resp.json();
   if (!resp.ok || js.error) throw new Error(js.error || "A* failed");
-  return js; // { positions: [...], total_cost_m, legs_m }
+
+  // If energy mode, add readable units
+  if (costMode === "energy") {
+    js.total_energy_kWh = (js.total_cost_m ?? 0) / 3.6e6;
+  }
+
+  return js;
 }
 
 // Initialize slider pills
@@ -369,19 +378,25 @@ $("solve").onclick = async () => {
   status("Solving (local Flask A*)…");
   try {
     const autoGrid = autoGridSize(waypoints);
+    const costMode = document.getElementById("costMode").value;
     const res = await solveRouteViaAPI(
-      waypoints, autoGrid, +margin.value, +maxSlope.value, +slopeW.value
+      waypoints, autoGrid, +margin.value, +maxSlope.value, +slopeW.value, costMode
     );
     lastSolveResult = res;
     drawSolvedRoute(res.positions);
-    // Show distance-like cost if present
-    if (typeof res.total_cost_m === "number") {
-      status(`A* total cost ≈ ${(res.total_cost_m / 1000).toFixed(2)} km`);
-    } else if (typeof res.total_energy_kWh === "number") {
-      status(`A* total energy ≈ ${res.total_energy_kWh.toFixed(3)} kWh`);
-    } else {
-      status("A* solved.");
+    // Show distance and/or energy if present
+    let msg = "A* solved.";
+
+    switch (costMode) {
+      case "energy":
+        status(`A* total energy ≈ ${res.total_energy_kWh?.toFixed(3) ?? "—"} kWh`);
+        return;
+      case "slope":
+      default:
+        status(`A* total distance ≈ ${(res.total_cost_m / 1000).toFixed(2)} km`);
+        return;
     }
+
   } catch (e) {
     console.error(e);
     status("⚠ " + e.message);
