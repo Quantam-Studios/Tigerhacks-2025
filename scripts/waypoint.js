@@ -191,6 +191,8 @@ fileInput.onchange = async e => {
     drawSolvedRoute(data.positions);
     lastSolveResult = data;
 
+    stopRotation();
+
     status(
       `Imported route with ${wp.length || 2} waypoint${(wp.length || 2) > 1 ? "s" : ""
       } (${data.positions.length} path points).`
