@@ -52,7 +52,10 @@ btnDownload.onclick = () => {
     return;
   }
 
-  const jsonText = JSON.stringify(lastSolveResult, null, 2);
+ const jsonText = JSON.stringify({
+  ...lastSolveResult,
+  waypoints: waypoints.map(p => ({ lon: p.lon, lat: p.lat }))
+}, null, 2);
   const blob = new Blob([jsonText], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -117,6 +120,89 @@ function makeTextBillboard(text) {
 
   return canvas.toDataURL();
 }
+
+const btnImport = document.getElementById("import");
+
+// create hidden file input
+const fileInput = document.createElement("input");
+fileInput.type = "file";
+fileInput.accept = "application/json";
+fileInput.style.display = "none";
+document.body.appendChild(fileInput);
+
+btnImport.onclick = () => fileInput.click();
+
+fileInput.onchange = async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const lowerName = file.name.toLowerCase();
+  const mime = file.type || "";
+  const looksJson =
+    lowerName.endsWith(".json") ||
+    mime === "application/json" ||
+    mime === "text/json";
+
+  if (!looksJson) {
+    status("⚠ Only .json files are supported. You selected: " + file.name);
+    fileInput.value = ""; // reset file picker
+    return;
+  }
+
+  try {
+    const text = await file.text();
+    if (!text.trim()) {
+      status("⚠ The chosen file is empty.");
+      return;
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      status("⚠ File is not valid JSON (" + parseErr.message + ")");
+      return;
+    }
+
+    if (!data || typeof data !== "object") {
+      status("⚠ File does not contain a JSON object.");
+      return;
+    }
+    if (!Array.isArray(data.positions)) {
+      status("⚠ Missing 'positions' array in JSON.");
+      return;
+    }
+
+    waypoints.length = 0;
+    if (solvedEntity) viewer.entities.remove(solvedEntity);
+    viewer.entities.values
+      .filter(e => e.__isWP)
+      .forEach(e => viewer.entities.remove(e));
+
+    const wp = Array.isArray(data.waypoints) ? data.waypoints : [];
+    if (wp.length > 0) wp.forEach(p => addWaypoint(p.lon, p.lat));
+    else {
+      const first = data.positions[0];
+      const last = data.positions[data.positions.length - 1];
+      addWaypoint(first.lon, first.lat);
+      addWaypoint(last.lon, last.lat);
+    }
+
+    drawSolvedRoute(data.positions);
+    lastSolveResult = data;
+
+    status(
+      `Imported route with ${wp.length || 2} waypoint${
+        (wp.length || 2) > 1 ? "s" : ""
+      } (${data.positions.length} path points).`
+    );
+  } catch (err) {
+    console.error(err);
+    status("❌ Import failed: " + err.message);
+  } finally {
+    fileInput.value = ""; // reset so same file can be chosen again
+  }
+};
 
 function addWaypoint(lon, lat) {
   const label = waypoints.length === 0 ? "START" :
