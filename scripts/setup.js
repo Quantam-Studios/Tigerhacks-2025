@@ -17,3 +17,15 @@ var viewer = new Cesium.Viewer("cesiumContainer", {
 
 // Mars ellipsoid
 viewer.scene.globe.ellipsoid = new Cesium.Ellipsoid(3396190.0, 3396190.0, 3376200.0);
+
+feather.replace();
+
+document.querySelectorAll('#panel input[type="range"]').forEach(slider => {
+  const update = () => {
+    const percent =
+      ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.setProperty("--range-percent", percent + "%");
+  };
+  slider.addEventListener("input", update);
+  update();
+});

@@ -1,68 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <title>Mars Viewer — A* Route Planner</title>
-
-  <!-- CesiumJS -->
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-  <div id="cesiumContainer"></div>
-
-  <!-- Waypoint UI panel -->
-  <div id="panel">
-    <h1>Mars Waypoints <span class="pill">A*</span></h1>
-
-    <div class="row">
-      <button id="toggleAdd" class="secondary">Add Waypoints</button>
-      <button id="undo" class="secondary">Undo</button>
-      <button id="clear" class="secondary">Clear</button>
-    </div>
-
-    <div class="row">
-      <label>BBox margin (km)</label>
-      <input id="margin" type="range" min="5" max="200" step="5" value="40">
-      <span id="marginVal" class="pill">40</span>
-    </div>
-    <div class="row">
-      <label>Max slope (grade)</label>
-      <input id="maxSlope" type="range" min="0.05" max="1.5" step="0.05" value="0.60">
-      <span id="maxSlopeVal" class="pill">0.60</span>
-    </div>
-    <div class="row">
-      <label>Slope weight</label>
-      <input id="slopeW" type="range" min="0" max="8" step="0.25" value="2.0">
-      <span id="slopeWVal" class="pill">2.00</span>
-    </div>
-
-    <div class="row">
-      <button id="solve">Solve Route (A*)</button>
-      <button id="download" class="secondary">Download JSON</button>
-    </div>
-
-    <div id="status"></div>
-    <div id="list"><em>No waypoints yet.</em></div>
-  </div>
-
-  <div id="coordLabel">Lon: —, Lat: —</div>
-
-  <div id="sidebar" class="sidebar hidden">
-    <button id="closeSidebar" class="close-btn">✕</button>
-    <div id="sidebarContent"></div>
-  </div>
-
-  <!-- Your environment values (TITILER_URL / FLASK_URL / MARS_TIF) -->
-  <script src="scripts/config.js"></script>
-  <script src="scripts/setup.js"></script>
-  <script src="scripts/view.js"></script>
-  <script src="scripts/landmark.js"></script>
-  <script src="scripts/label.js"></script>
-  <script src="scripts/waypoint.js"></script>
-</body>
-
+    <head>
+        <meta charset="UTF-8">
+        <title>Mars Viewer — A* Route Planner</title>
+        <!-- CesiumJS -->
+        <script src="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Cesium.js" rel="preload"></script>
+        <link href="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+        <script src="https://unpkg.com/feather-icons"></script>
+    </head>
+    <body>
+        <div id="cesiumContainer"></div>
+        <!-- Waypoint UI panel -->
+        <div id="panel">
+            <h1>
+                Mars Route Planner
+                <span class="pill">A*</span>
+            </h1>
+            <section>
+                <h3>Waypoints</h3>
+                <div class="row">
+                    <button id="toggleAdd">
+                        <i data-feather="map-pin"></i>
+                        Add
+                    </button>
+                    <button id="undo" class="secondary">
+                        <i data-feather="corner-up-left"></i>
+                        Undo
+                    </button>
+                    <button id="clear" class="secondary">
+                        <i data-feather="trash-2"></i>
+                        Clear
+                    </button>
+                </div>
+                <div id="list">
+                    <em>No waypoints yet.</em>
+                </div>
+            </section>
+            <section>
+                <h3>Solver settings</h3>
+                <div class="row">
+                    <label>Margin (km)</label>
+                    <input
+                        id="margin"
+                        type="range"
+                        min="5"
+                        max="200"
+                        step="5"
+                        value="40"
+                    >
+                    <span id="marginVal" class="pill">40</span>
+                </div>
+                <div class="row">
+                    <label>Max slope (grade)</label>
+                    <input
+                        id="maxSlope"
+                        type="range"
+                        min="0.05"
+                        max="1.5"
+                        step="0.05"
+                        value="0.60"
+                    >
+                    <span id="maxSlopeVal" class="pill">0.60</span>
+                </div>
+                <div class="row">
+                    <label>Slope weight</label>
+                    <input
+                        id="slopeW"
+                        type="range"
+                        min="0"
+                        max="8"
+                        step="0.25"
+                        value="2.0"
+                    >
+                    <span id="slopeWVal" class="pill">2.00</span>
+                </div>
+            </section>
+            <section>
+                <h3>Solve</h3>
+                <div class="row">
+                    <button id="solve">
+                        <i data-feather="activity"></i> Solve
+                    </button>
+                    <button id="download" class="secondary">
+                        <i data-feather="download"></i> Download
+                    </button>
+                </div>
+                <div id="status">Status: Create a route first.</div>
+            </section>
+        </div>
+        <div id="coordLabel">Lon: —, Lat: —</div>
+        <div id="sidebar" class="sidebar hidden">
+            <button id="closeSidebar" class="close-btn">✕</button>
+            <div id="sidebarContent"></div>
+        </div>
+        <!-- Your environment values (TITILER_URL / FLASK_URL / MARS_TIF) -->
+        <script src="scripts/config.js"></script>
+        <script src="scripts/setup.js"></script>
+        <script src="scripts/view.js"></script>
+        <script src="scripts/landmark.js"></script>
+        <script src="scripts/label.js"></script>
+        <script src="scripts/waypoint.js"></script>
+    </body>
 </html>
