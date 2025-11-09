@@ -59,7 +59,7 @@ body,
   font-weight: 600;
   font-size: 13px;
   line-height: 1;
-  padding: 8px 14px;
+  padding: 6px 10px;
   border-radius: 10px;
   cursor: pointer;
 }
@@ -185,8 +185,10 @@ body,
 .panel-toggle {
   position: absolute;
   top: 16px;
-  left: 380px; /* starts aligned to panel edge */
-  z-index: 2000; /* above everything so it never hides */
+  left: 380px;
+  /* starts aligned to panel edge */
+  z-index: 2000;
+  /* above everything so it never hides */
   width: 28px;
   height: 28px;
   border: 2px solid #2b3663;
@@ -197,7 +199,7 @@ body,
   line-height: 24px;
   cursor: pointer;
   transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              background 0.2s ease;
+    background 0.2s ease;
 }
 
 .panel-toggle:hover {
@@ -205,8 +207,44 @@ body,
 }
 
 /* when panel hidden, move button closer to left edge */
-#panel.hidden ~ .panel-toggle {
+#panel.hidden~.panel-toggle {
   left: 14px;
+}
+
+/* Landmarks Toggle Button ----------------------------------------------- */
+.landmark-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: absolute;
+  bottom: 40px;
+  left: 12px;
+  /* just to the right of coordLabel */
+  z-index: 1001;
+  background: #1a203b;
+  color: #e8ecff;
+  border: 1px solid #2b3663;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.landmark-toggle:hover {
+  background: #2a3357;
+}
+
+.landmark-toggle.active {
+  background: #7aa2ff;
+  color: #0c0f17;
+  border-color: #7aa2ff;
+}
+
+.landmark-toggle svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
 }
 
 /* Small legend bubble (optional) ----------------------------------------- */
@@ -227,8 +265,8 @@ body,
 /* Mouse coordinate label -------------------------------------------------- */
 #coordLabel {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
+  bottom: 12px;
+  left: 12px;
   padding: 4px 8px;
   background: rgba(18, 23, 38, 0.6);
   color: white;

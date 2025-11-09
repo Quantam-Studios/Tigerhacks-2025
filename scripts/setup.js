@@ -29,3 +29,12 @@ document.querySelectorAll('#panel input[type="range"]').forEach(slider => {
   slider.addEventListener("input", update);
   update();
 });
+
+const btnLandmarks = document.getElementById("landmarkToggle");
+
+btnLandmarks.onclick = () => {
+  // Assuming you have global 'viewer' accessible
+  const showing = toggleLandmarks(viewer);
+  btnLandmarks.classList.toggle("active", showing);
+  btnLandmarks.title = showing ? "Hide landmarks" : "Show landmarks";
+};

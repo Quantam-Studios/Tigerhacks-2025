@@ -1,6 +1,17 @@
 // ---------- Landmark pins (kept from your file) ----------
 function normalizeLon(lonDeg) { return ((lonDeg + 180) % 360) - 180; }
 
+// Inside landmark.js
+let landmarksVisible = true;
+
+function toggleLandmarks(viewer) {
+  landmarksVisible = !landmarksVisible;
+  viewer.entities.values.forEach(e => {
+    if (e.__isLandmark) e.show = landmarksVisible;
+  });
+  return landmarksVisible;
+}
+
 fetch("./mars_landmarks.geojson")
     .then(r => r.json())
     .then(geojson => {
