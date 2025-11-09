@@ -23,6 +23,7 @@ let solvedEntity = null;
 let lastSolveResult = null;
 
 btnAdd.onclick = () => {
+  stopRotation();
   adding = !adding;
   btnAdd.textContent = adding ? "Adding… (click globe)" : "Add Waypoints";
   btnAdd.classList.toggle("secondary", !adding);
