@@ -30,6 +30,9 @@
   const viewer = new Cesium.Viewer("cesiumContainer", {
     imageryProvider: false,
     baseLayerPicker: false,
+    animation: false,
+    timeline: false,
+    creditContainer: document.createElement('div'),
   });
 
   viewer.scene.globe.ellipsoid = new Cesium.Ellipsoid(
