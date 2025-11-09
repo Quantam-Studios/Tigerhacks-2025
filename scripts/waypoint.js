@@ -115,7 +115,6 @@ handler.setInputAction((movement) => {
   const lon = Cesium.Math.toDegrees(carto.longitude);
   const lat = Cesium.Math.toDegrees(carto.latitude);
   addWaypoint(lon, lat);
-  resetIdleTimer(); // any interaction cancels idle rotation
 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
 function autoGridSize(waypoints) {
@@ -211,7 +210,6 @@ $("solve").onclick = async () => {
     } else {
       status("A* solved.");
     }
-    resetIdleTimer();
   } catch (e) {
     console.error(e);
     status("⚠ " + e.message);
