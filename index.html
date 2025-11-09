@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <title>Mars Viewer</title>
-
-  <!-- Cesium library -->
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
-
-  <style>
+    <head>
+        <meta charset="UTF-8">
+        <title>Mars Viewer</title>
+        <!-- Cesium library -->
+        <script src="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Cesium.js"></script>
+        <link href="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+        <style>
     html,
     body,
     #cesiumContainer {
@@ -20,45 +17,39 @@
       overflow: hidden;
       display: block;
     }
-  </style>
-</head>
+        </style>
+    </head>
+    <body>
+        <!-- The DOM container where Cesium will render the globe -->
+        <div id="cesiumContainer"></div>
+        <script src="config.js"></script>
+        <script>
+  const { TITILER_URL, FLASK_URL, MARS_TIF } = window.__ENV__;
+  const tileUrl = `${TITILER_URL}/cog/tiles/WorldCRS84Quad/{z}/{x}/{y}@1x?url=${FLASK_URL}/${MARS_TIF}`;
 
-<body>
-  <!-- The DOM container where Cesium will render the globe -->
-  <div id="cesiumContainer"></div>
+  const viewer = new Cesium.Viewer("cesiumContainer", {
+    imageryProvider: false,
+    baseLayerPicker: false,
+  });
 
-  <script>
-    // Create Cesium Viewer
-    const viewer = new Cesium.Viewer("cesiumContainer", {
-      imageryProvider: false,
-      baseLayerPicker: false,
-    });
+  viewer.scene.globe.ellipsoid = new Cesium.Ellipsoid(
+    3396190.0,
+    3396190.0,
+    3376200.0
+  );
 
-    // Swap in Mars shape instead of Earth
-    viewer.scene.globe.ellipsoid = new Cesium.Ellipsoid(
-      3396190.0, // Mars equatorial radius (m)
-      3396190.0,
-      3376200.0  // Mars polar radius (m)
-    );
+  viewer.imageryLayers.addImageryProvider(
+    new Cesium.UrlTemplateImageryProvider({
+      url: tileUrl,
+      tilingScheme: new Cesium.GeographicTilingScheme(),
+      rectangle: Cesium.Rectangle.fromDegrees(-180, -90, 180, 90),
+      credit: "Mars 6.25° data via TiTiler + Flask",
+    })
+  );
 
-    // Load NASA Trek global color mosaic (WMS)
-    viewer.imageryLayers.addImageryProvider(
-      new Cesium.UrlTemplateImageryProvider({
-        // Titiler/Flask COG tiles endpoint
-        url:
-          "http://45.76.227.0:8080/cog/tiles/WebMercatorQuad/%7Bz%7D/%7Bx%7D/%7By%7D@1x?url=file:///srv/marsserver/world_cog.tif",
-        tilingScheme: new Cesium.GeographicTilingScheme(), // for EPSG:4326
-        minimumLevel: 0,
-        maximumLevel: 8, // adjust for desired zoom range
-        credit: "My COG Server",
-      })
-    );
-
-    // Simple camera start position (looking at Gale Crater)
-    viewer.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(137.4, -4.6, 2_000_000),
-    });
-  </script>
-</body>
-
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(137.4, -4.6, 2_000_000),
+  });
+        </script>
+    </body>
 </html>

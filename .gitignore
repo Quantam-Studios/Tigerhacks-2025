@@ -1,6 +1,9 @@
 # data
 **/data/
 
+#config
+config.js
+
 # dependencies
 node_modules/
 
