@@ -95,7 +95,7 @@ function resetIdleTimer() {
 }
 
 // Stop rotation and reset timer on any user interaction
-viewer.scene.canvas.addEventListener('mousedown', () => {
+document.addEventListener('mousedown', () => {
     hasUserInteracted = true;
     resetIdleTimer();
 });
@@ -106,6 +106,11 @@ viewer.scene.canvas.addEventListener('wheel', () => {
 viewer.scene.canvas.addEventListener('touchstart', () => {
     hasUserInteracted = true;
     resetIdleTimer();
+});
+viewer.scene.camera.changed.addEventListener(() => {
+    if (hasUserInteracted) {
+        resetIdleTimer();
+    }
 });
 
 // Start the initial idle timer
