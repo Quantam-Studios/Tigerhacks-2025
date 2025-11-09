@@ -269,14 +269,14 @@ function drawSolvedRoute(points) {
       arcType: Cesium.ArcType.GEODESIC,
       granularity: Cesium.Math.RADIANS_PER_DEGREE / 10
     }
-  });
+  });/*
   const rect = Cesium.Rectangle.fromRadians(
     Math.min(...points.map(p => Cesium.Math.toRadians(p.lon))),
     Math.min(...points.map(p => Cesium.Math.toRadians(p.lat))),
     Math.max(...points.map(p => Cesium.Math.toRadians(p.lon))),
     Math.max(...points.map(p => Cesium.Math.toRadians(p.lat)))
   );
-  viewer.camera.flyTo({ destination: rect, duration: 0.8 });
+  viewer.camera.flyTo({ destination: rect, duration: 0.8 });*/
 }
 // endregion
 
