@@ -52,10 +52,10 @@ btnDownload.onclick = () => {
     return;
   }
 
- const jsonText = JSON.stringify({
-  ...lastSolveResult,
-  waypoints: waypoints.map(p => ({ lon: p.lon, lat: p.lat }))
-}, null, 2);
+  const jsonText = JSON.stringify({
+    ...lastSolveResult,
+    waypoints: waypoints.map(p => ({ lon: p.lon, lat: p.lat }))
+  }, null, 2);
   const blob = new Blob([jsonText], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -192,8 +192,7 @@ fileInput.onchange = async e => {
     lastSolveResult = data;
 
     status(
-      `Imported route with ${wp.length || 2} waypoint${
-        (wp.length || 2) > 1 ? "s" : ""
+      `Imported route with ${wp.length || 2} waypoint${(wp.length || 2) > 1 ? "s" : ""
       } (${data.positions.length} path points).`
     );
   } catch (err) {
@@ -205,14 +204,17 @@ fileInput.onchange = async e => {
 };
 
 function addWaypoint(lon, lat) {
-  const label = waypoints.length === 0 ? "START" :
-    (waypoints.length === 1 ? "END?" : `WP${waypoints.length}`);
   const entity = viewer.entities.add({
     __isWP: true,
     position: Cesium.Cartesian3.fromDegrees(lon, lat),
-    point: { pixelSize: 8, color: Cesium.Color.fromCssColorString("#7aa2ff"), outlineColor: Cesium.Color.WHITE, outlineWidth: 1 },
+    point: {
+      pixelSize: 8,
+      color: Cesium.Color.fromCssColorString("#7aa2ff"),
+      outlineColor: Cesium.Color.WHITE,
+      outlineWidth: 1
+    },
     label: {
-      text: `${label}\n${lon.toFixed(4)}, ${lat.toFixed(4)}`,
+      text: "",
       font: "700 10px Inter, sans-serif",
       fillColor: Cesium.Color.fromCssColorString("#eef2ff"),
       outlineWidth: 0,
@@ -222,13 +224,21 @@ function addWaypoint(lon, lat) {
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
       scaleByDistance: new Cesium.NearFarScalar(0, 1.4, 2.0e6, 0.6),
       heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-
       scale: window.devicePixelRatio * 1.5,
       eyeOffset: new Cesium.Cartesian3(0.0, 0.0, -10.0),
       labelStyle: Cesium.LabelStyle.FILL
     }
   });
+
   waypoints.push({ lon, lat, entity });
+  waypoints.forEach((wp, i) => {
+    let tag;
+    if (i === 0) tag = "START";
+    else if (i === waypoints.length - 1) tag = "END";
+    else tag = `WP${i}`;
+    wp.entity.label.text = `${tag}\n${wp.lon.toFixed(4)}, ${wp.lat.toFixed(4)}`;
+  });
+
   renderList();
   redrawDashed();
 }
