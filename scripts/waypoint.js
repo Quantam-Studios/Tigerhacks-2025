@@ -92,6 +92,32 @@ function redrawDashed() {
   } catch (_) { }
 }
 
+// ---------- High-resolution text billboard helper ----------
+function makeTextBillboard(text) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  const font = "700 16px Inter, sans-serif";
+  ctx.font = font;
+  const metrics = ctx.measureText(text);
+  canvas.width = metrics.width + 16;
+  canvas.height = 28;
+
+  // reapply font after width/height reset
+  ctx.font = font;
+  ctx.textBaseline = "middle";
+
+  // background rectangle (dark panel color)
+  ctx.fillStyle = "#181d30";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // text fill
+  ctx.fillStyle = "#e7ebfa";
+  ctx.fillText(text, 8, canvas.height / 2);
+
+  return canvas.toDataURL();
+}
+
 function addWaypoint(lon, lat) {
   const label = waypoints.length === 0 ? "START" :
     (waypoints.length === 1 ? "END?" : `WP${waypoints.length}`);
@@ -101,11 +127,19 @@ function addWaypoint(lon, lat) {
     point: { pixelSize: 8, color: Cesium.Color.CYAN, outlineColor: Cesium.Color.WHITE, outlineWidth: 1 },
     label: {
       text: `${label}\n${lon.toFixed(4)}, ${lat.toFixed(4)}`,
-      font: "bold 14px sans-serif",
+      font: "700 10px Inter, sans-serif",
+      fillColor: Cesium.Color.fromCssColorString("#eef2ff"),
+      outlineWidth: 0,
       showBackground: true,
-      backgroundColor: Cesium.Color.fromBytes(18, 23, 38, 220),
-      pixelOffset: new Cesium.Cartesian2(0, -18),
-      disableDepthTestDistance: Number.POSITIVE_INFINITY
+      backgroundColor: Cesium.Color.fromCssColorString("rgba(18, 23, 38, 0.6)"),
+      pixelOffset: new Cesium.Cartesian2(0, -22),
+      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      scaleByDistance: new Cesium.NearFarScalar(0, 1.4, 2.0e6, 0.6),
+      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+
+      scale: window.devicePixelRatio * 1.5,
+      eyeOffset: new Cesium.Cartesian3(0.0, 0.0, -10.0),
+      labelStyle: Cesium.LabelStyle.FILL
     }
   });
   waypoints.push({ lon, lat, entity });
